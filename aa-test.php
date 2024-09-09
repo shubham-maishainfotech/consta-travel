@@ -12,6 +12,7 @@ while ($flightdata =  mysql_fetch_array($slquery)) {
   $departure_city_code = $flightdata['departure_city_code'];
   $destination_city_code = $flightdata['destination_city_code'];
   $departure_date = $flightdata['departure_date'];
+
   $return_date = $flightdata['return_date'];
   $adult = $flightdata['adult'];
   $child = $flightdata['child'];
@@ -81,6 +82,7 @@ if ($departure_date) {
   $dd = substr($departure_date . "", 6, 2);
   $departure_date = $yy . '-' . $mm . '-' . $dd;
 }
+
 if ($return_date) {
   $yy = substr($return_date . "", 0, 4);
   $mm = substr($return_date . "", 4, 2);
@@ -177,61 +179,14 @@ $total = count($datas);
 $dictonary = $data['dictionaries'];
 $carriers = $dictonary['carriers'];
 $aircraft = $dictonary['aircraft'];
-// AirportCodes
-$airportCodes = array();
-foreach ($datas as $d) {
-  $itinerariess = $d['itineraries'][0]['segments'];
-  foreach ($itinerariess as $itineraries) {
-    // collecting departure Airport Code  
-    $citynameCode = $itineraries['departure']['iataCode'];
-    $res = mysql_query("SELECT * FROM `airport_codes` where code='" . $citynameCode . "' ");
-    $resrow = mysql_fetch_array($res);
-    $cityname1 = $resrow['city'];
-    $airport_name1 = $resrow['airportname'];
-    $airportCodes["$citynameCode"] = array('airportname' => "$airport_name1", 'city' => "$cityname1");
-
-    // collecting Arrival Airport Codes 
-    $citynameCode = $itineraries['arrival']['iataCode'];
-    $res = mysql_query("SELECT * FROM `airport_codes` where code='" . $citynameCode . "' ");
-    $resrow = mysql_fetch_array($res);
-    $cityname1 = $resrow['city'];
-    $airport_name1 = $resrow['airportname'];
-    $airportCodes["$citynameCode"] = array('airportname' => "$airport_name1", 'city' => "$cityname1");
-  }
-}
-// Ends AirportCodes
 
 // Returning Flights
-// $dataReturn = json_decode($resultReturn, true);
+$dataReturn = json_decode($resultReturn, true);
 $dataReturn = json_decode($result, true);
 $datasReturn = $dataReturn['data'];
 $dictonaryReturn = $dataReturn['dictionaries'];
 $carriersReturn = $dictonaryReturn['carriers'];
 $aircraftReturn = $dictonaryReturn['aircraft'];
-// AirportCodes Returning Flights
-$airportCodesReturn = array();
-foreach ($datasReturn as $d) {
-  $itinerariess = $d['itineraries'][0]['segments'];
-  foreach ($itinerariess as $itineraries) {
-    // collecting departure Airport Code  
-    $citynameCode = $itineraries['departure']['iataCode'];
-    $res = mysql_query("SELECT * FROM `airport_codes` where code='" . $citynameCode . "' ");
-    $resrow = mysql_fetch_array($res);
-    $cityname1 = $resrow['city'];
-    $airport_name1 = $resrow['airportname'];
-    $airportCodesReturn["$citynameCode"] = array('airportname' => "$airport_name1", 'city' => "$cityname1");
-
-    // collecting Arrival Airport Codes 
-    $citynameCode = $itineraries['arrival']['iataCode'];
-    $res = mysql_query("SELECT * FROM `airport_codes` where code='" . $citynameCode . "' ");
-    $resrow = mysql_fetch_array($res);
-    $cityname1 = $resrow['city'];
-    $airport_name1 = $resrow['airportname'];
-    $airportCodesReturn["$citynameCode"] = array('airportname' => "$airport_name1", 'city' => "$cityname1");
-  }
-}
-
-// Ends AirportCodes Returning Flights
 ?>
 
 
@@ -242,6 +197,7 @@ foreach ($datasReturn as $d) {
 <head>
   <title>Consta Travel - Flight results </title>
   <link rel="stylesheet" href="./css/new-styles.css">
+
   <?php
   include('head.php');
   ?>
@@ -428,23 +384,7 @@ foreach ($datasReturn as $d) {
       /* margin-top: 10px; */
       /* margin-bottom: 10px; */
       padding: 0px !important;
-      /* padding-right: 10px !important; */
-    }
-
-    .padz {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    margin-bottom: 0px;
-    border-bottom: 0;
-}
-
-    .padx {
-      border-top-left-radius: 0px;
-      border-bottom-left-radius: 0px;
-      border-bottom-right-radius: 0px;
-      margin-bottom: 0px;
-      border-bottom: 0;
+      padding-right: 10px !important;
     }
 
     hr.hrks1 {
@@ -478,88 +418,11 @@ foreach ($datasReturn as $d) {
     }
 
     .selected {
-      border: 1px solid #007fff;
-      /* Example highlight color */
-      background-color: #e9eeef;
-      /* Example background color for selected */
+      border: 1px solid #007fff; /* Example highlight color */
+      background-color: #e9eeef; /* Example background color for selected */
     }
 
-    .a_flight {
-      background-color: #F7F7F7;
-      padding: 5px 5px 5px 15px;
-      border-radius: 5px;
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
-      border-bottom: 1px solid #e6e6e6;
-      border-left: 1px solid #e6e6e6;
-      border-right: 1px solid #e6e6e6;
-      margin-bottom: 10px;
-    }
 
-    .flight__a {
-      color: #5f4d7b;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .paddy{
-      padding-top: 25px;
-      padding-bottom: 24px;
-    }
-    .modal-header {
-    padding: 15px;
-    border-bottom: 1px solid #e5e5e5;
-    position: sticky;
-    top: 0;
-    background: #5f4d7b;
-    color: #ffffff;
-    z-index: 7;
-}
-  .closee{
-    color: #ffffff !important;
-  }
-  .modal-footer {
-    padding: 15px;
-    text-align: right;
-    /* border-top: 1px solid #e5e5e5; */
-    border: 0;
-    position: sticky;
-    bottom: 0;
-    right: 0;
-    z-index: 7;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(36, 39, 41, .2);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-}
-span.bold_price {
-    font-weight: 700;
-    font-size: 22px;
-}
-.modal-open .modal {
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-.modal-body {
-    position: relative;
-    padding: 15px;
-    width: 100%;
-    height: 70vh;
-    overflow-y: auto;
-}
-::-webkit-scrollbar{
-  width: 7px;
-  height: 5px;
-}
-::-webkit-scrollbar-thumb{
-  background-color: #725d93;
-    border-radius: 4px;
-    border: 0;
-}
-::-webkit-scrollbar-track {
-    border-radius: 4px;
-}
   </style>
   <section class="main_flight__results">
     <div class="container">
@@ -832,8 +695,8 @@ span.bold_price {
                   <!-- First Column Onward Flights -->
                   <div class="col col-md-5 my-3">
                     <div class="theme-search-results" id="tobePagination-">
-                      <div class="theme-search-results-item theme-search-results-item-rounded theme-search-results-item- padz">
-                        <div class="theme-search-results-item-preview paddy">
+                      <div class="theme-search-results-item theme-search-results-item-rounded theme-search-results-item-">
+                        <div class="theme-search-results-item-preview">
                           <div class="row main_container" data-gutter="20">
                             <div class="col-md-12">
                               <div class="theme-search-results-item-flight-sections">
@@ -844,9 +707,9 @@ span.bold_price {
                                         <img class="theme-search-results-item-flight-section-airline-logo" src="https://pics.avs.io/100/50/UK.png" alt="Consta Travel" title="Image Title" style="height: 31px;" id="onward_flight_img">
                                       </div>
                                       <p style="font-size: 10px; line-height: 1;" id="onward_carrier_name">VISTARA</p>
-                                      <!-- <a href="#" data-toggle="modal" data-target="#myModal">
+                                      <a href="#" data-toggle="modal" data-target="#myModal">
                                         Flight Details
-                                      </a> -->
+                                      </a>
 
                                       <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
                                         Open Modal
@@ -899,7 +762,7 @@ span.bold_price {
                   <!-- Second Column Returning Flights -->
                   <div class="col col-md-7 my-3">
                     <div class="theme-search-results" id="tobePagination-">
-                      <div class="theme-search-results-item theme-search-results-item-rounded theme-search-results-item- padx">
+                      <div class="theme-search-results-item theme-search-results-item-rounded theme-search-results-item-">
                         <div class="theme-search-results-item-preview">
                           <div class="row main_container" data-gutter="20">
                             <div class="col-md-9 ">
@@ -965,12 +828,6 @@ span.bold_price {
                       </div>
                     </div>
                   </div>
-
-                  <div class="col col-md-12 a_flight">
-                    <a href="#" data-toggle="modal" data-target="#myModal" class="flight__a">
-                      Flight Details
-                    </a>
-                  </div>
                   <!-- <div class="row">
                     <div class="col-md-2">
                       <span class="btn btn-sm btn-primary"  onclick="fpop_show()">Flight details</span>
@@ -978,32 +835,32 @@ span.bold_price {
                   </div> -->
 
                   <div class="row">
-                    <div class="col col-md-6 ">
-                      <div class="d-flex " style="justify-content: space-between; background: #f2f2f2; padding: 3px 6px;">
+                      <div class="col col-md-6 ">
+                        <div class="d-flex " style="justify-content: space-between; background: #f2f2f2; padding: 3px 6px;">
 
-                        <div class="">Airlines</div>
-                        <!-- <div class="d-flex " style="gap: 15px;">
+                          <div class="">Airlines</div>
+                          <!-- <div class="d-flex " style="gap: 15px;">
                             <div class="">Departure</div>
                           </div> -->
-                        <div class="" style="    padding-right: 41px;">Duration</div>
-                        <span class="text-primary">Price <i class="fa fa-arrow-up"></i></span>
+                          <div class="" style="    padding-right: 41px;">Duration</div>
+                          <span class="text-primary">Price <i class="fa fa-arrow-up"></i></span>
+                        </div>
+
                       </div>
 
-                    </div>
+                      <div class="col col-md-6 " style="margin: 0px -14px; padding: 0px 15px;">
+                        <div class="d-flex " style="justify-content: space-between; background: #f2f2f2; padding: 3px 6px;">
 
-                    <div class="col col-md-6 " style="margin: 0px -14px; padding: 0px 15px;">
-                      <div class="d-flex " style="justify-content: space-between; background: #f2f2f2; padding: 3px 6px;">
-
-                        <div class="">Airlines</div>
-                        <!-- <div class="d-flex " style="gap: 15px;">
+                          <div class="">Airlines</div>
+                          <!-- <div class="d-flex " style="gap: 15px;">
                             <div class="">Departure</div>
                           </div> -->
-                        <div class="" style="    padding-right: 41px;">Duration</div>
-                        <span class="text-primary">Price <i class="fa fa-arrow-up"></i></span>
-                      </div>
+                          <div class="" style="    padding-right: 41px;">Duration</div>
+                          <span class="text-primary">Price <i class="fa fa-arrow-up"></i></span>
+                        </div>
 
+                      </div>
                     </div>
-                  </div>
                 </div>
                 <!-- Ends Upper Selected Flight Detail -->
 
@@ -1011,205 +868,13 @@ span.bold_price {
                 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                   <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                      <div class="modal-header sticky-top">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="closee">&times;</span></button>
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="myModalLabel">Details of your round trip</h4>
                       </div>
                       <div class="modal-body">
-
-                        <div class="flight_onward">
-                          <h3>Onward Flights</h3>
-                          <div id="flight_detail_modal_onward"></div>
-                        </div>
-
-                        <div class="flight_return">
-                          <h3>Return Flights</h3>
-                          <div id="flight_detail_modal_return"></div>
-                        </div>
-
-                        
-                        <!-- Onwards Flight Details Container -->
-                        <!-- <div class="theme-search-results-item-flight-details">
-                          <div class="containerks">
-                            <div class="row" style="margin-bottom: 12px;">
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-start colks1">
-                                  <img class="theme-search-results-item-flight-section-airline-logo" src="https://pics.avs.io/200/100/XY.png" alt="Consta Travel" title="Image Title">
-                                  <h5>FLYNAS</h5>
-                                  <p>AIRBUS A320</p>
-                                  <p>PREMIUM_ECONOMY</p>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="d-flex align-items-center justify-content-between colks2">
-                                  <div class="d-flex align-items-center flex-column colks21 align-items-start">
-                                    <h3>DEL <strong>04:15</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Indira Gandhi Intl Airport, Terminal undefined, New Delhi</p>
-                                  </div>
-                                  <div class="d-flex flex-column colks22 align-items-center">
-                                    <i class="fa fa-clock"></i>
-                                    <p>4H25M</p>
-                                  </div>
-                                  <div class="d-flex align-items-center flex-column colks23 align-items-start">
-                                    <h3>RUH <strong>06:10</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>King Khaled Intl Airport, Terminal 3, Riyadh</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-center colks3">
-
-                                  <div class="d-flex justify-content-between colks31">
-                                    <p>Check-in bags</p>
-                                    <p><strong>2 Qty</strong></p>
-                                  </div>
-
-                                </div>
-                              </div>
-                            </div>
-
-                            <hr>
-                            <div class="div_middle">
-                              <span>RUH ( Layover 1h : 30m )</span>
-                            </div>
-                            <div class="row" style="margin-bottom: 12px;">
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-start colks1">
-                                  <img class="theme-search-results-item-flight-section-airline-logo" src="https://pics.avs.io/200/100/XY.png" alt="Consta Travel" title="Image Title">
-                                  <h5>FLYNAS</h5>
-                                  <p>AIRBUS A320</p>
-                                  <p>PREMIUM_ECONOMY</p>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="d-flex align-items-center justify-content-between colks2">
-                                  <div class="d-flex align-items-center flex-column colks21 align-items-start">
-                                    <h3>RUH <strong>07:40</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>King Khaled Intl Airport, Terminal 3, Riyadh</p>
-                                  </div>
-                                  <div class="d-flex flex-column colks22 align-items-center">
-                                    <i class="fa fa-clock"></i>
-                                    <p>1H55M</p>
-                                  </div>
-                                  <div class="d-flex align-items-center flex-column colks23 align-items-start">
-                                    <h3>DXB <strong>10:35</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Dubai Airport, Terminal 1, Dubai</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-center colks3">
-
-                                  <div class="d-flex justify-content-between colks31">
-                                    <p>Check-in bags</p>
-                                    <p><strong>2 Qty</strong></p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div> -->
-                        <!-- Ends Onwards Flight Details Container -->
-
-                        <!-- Return Flight Details Container -->
-                        <!-- <div class="theme-search-results-item-flight-details">
-                          <div class="containerks">
-                            <div class="row" style="margin-bottom: 12px;">
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-start colks1">
-                                  <img class="theme-search-results-item-flight-section-airline-logo" src="https://pics.avs.io/200/100/UK.png" alt="Consta Travel" title="Image Title">
-                                  <h5>VISTARA</h5>
-                                  <p>AIRBUS A320</p>
-                                  <p>PREMIUM_ECONOMY</p>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="d-flex align-items-center justify-content-between colks2">
-                                  <div class="d-flex align-items-center flex-column colks21 align-items-start">
-                                    <h3>DEL <strong>10:20</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Indira Gandhi Intl Airport, Terminal 3, New Delhi</p>
-                                  </div>
-                                  <div class="d-flex flex-column colks22 align-items-center">
-                                    <i class="fa fa-clock"></i>
-                                    <p>2H15M</p>
-                                  </div>
-                                  <div class="d-flex align-items-center flex-column colks23 align-items-start">
-                                    <h3>BOM <strong>12:35</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Chhatrapati Shivaji International Airport, Terminal 2, Mumbai</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-center colks3">
-
-                                  <div class="d-flex justify-content-between colks31">
-                                    <p>Check-in baggage: </p>
-                                    <p><strong>35KG</strong></p>
-                                  </div>
-
-                                </div>
-                              </div>
-                            </div>
-
-                            <hr>
-                            <div class="div_middle">
-                              <span>BOM ( Layover 3h : 50m )</span>
-                            </div>
-                            <div class="row" style="margin-bottom: 12px;">
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-start colks1">
-                                  <img class="theme-search-results-item-flight-section-airline-logo" src="https://pics.avs.io/200/100/UK.png" alt="Consta Travel" title="Image Title">
-                                  <h5>VISTARA</h5>
-                                  <p>AIRBUS A321</p>
-                                  <p>PREMIUM_ECONOMY</p>
-                                </div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="d-flex align-items-center justify-content-between colks2">
-                                  <div class="d-flex align-items-center flex-column colks21 align-items-start">
-                                    <h3>BOM <strong>16:25</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Chhatrapati Shivaji International Airport, Terminal 2, Mumbai</p>
-                                  </div>
-                                  <div class="d-flex flex-column colks22 align-items-center">
-                                    <i class="fa fa-clock"></i>
-                                    <p>3H20M</p>
-                                  </div>
-                                  <div class="d-flex align-items-center flex-column colks23 align-items-start">
-                                    <h3>DXB <strong>18:15</strong></h3>
-                                    <p>Thursday, August 15</p>
-                                    <p>Dubai Airport, Terminal 1, Dubai</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-md-3">
-                                <div class="d-flex flex-column align-items-center colks3">
-
-                                  <div class="d-flex justify-content-between colks31">
-                                    <p>Check-in baggage: </p>
-                                    <p><strong>35KG</strong></p>
-                                  </div>
-
-                                </div>
-                              </div>
-                            </div>
-
-                          </div>
-                        </div> -->
-                        <!-- Ends Return Flight Details Container -->
-                        
-                      </div>
-                      <div class="modal-footer">
-                        <div class="footer-price">
-                          <span class="bold_price">₹ <span id="combined_modal_price" class="bold_price">11,450</span></span>
-                        </div>
-                        <div class="footer-button">
+                        <div class="modal-footer">
+                          <span>₹11,450</span>
                           <button type="button" class="btn btn-primary">Book</button>
                         </div>
                       </div>
@@ -1398,7 +1063,7 @@ span.bold_price {
         var $active, $content, $links = $(this).find('a');
 
         $active = $($links[0]);
-        $active.addClass('active_hny'); 
+        $active.addClass('active_hny');
 
         $content = $($active[0].hash);
 
@@ -1703,20 +1368,232 @@ span.bold_price {
     window.addEventListener('scroll', handleSticky);
     handleSticky();
   });
+  
 </script>
-<!-- Displaying Data starts-->
+
 <script>
   let ongoingFlights = <?php echo json_encode($datas) ?>;
   let ongoingCarriers = <?= json_encode($carriers) ?>;
-  let ongoingAircraft = <?= json_encode($aircraft) ?>;
-  let ongoingAirportCodes = <?= json_encode($airportCodes) ?>;
 
   let returningFlights = <?php echo json_encode($datasReturn) ?>;
   let returningCarriers = <?= json_encode($carriersReturn) ?>;
-  let returningAircraft = <?= json_encode($aircraftReturn) ?>;
-  let returningAirportCodes = <?= json_encode($airportCodesReturn) ?>;
+
+  const onward_flights_cntnr = document.getElementById('onward_flights');
+  const returning_flights_cntnr = document.getElementById('returning_flights');
+
+  renderFlightDetails(ongoingFlights, ongoingCarriers, onward_flights_cntnr);
+  renderFlightDetails(returningFlights, returningCarriers, returning_flights_cntnr);
+
+  function renderFlightDetails(flights, carriers, container){
+    // container.innerHTML = '';
+
+    flights.forEach(function (flight, idx){
+      let values = flight;
+      const itineraries = values.itineraries[0];
+
+      // Calculating travel time
+      let duration = itineraries.duration;
+      duration = duration.substr(2);
+
+      // Computing Departure Date
+      const depdate = itineraries.segments[0].departure.at;
+      const depArray = depdate.split("T");
+      const depDate = depArray[0];
+      const depTime = depArray[1].substr(0, 5);
+      const dedate = new Date(depDate);
+      const deparDate = dedate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' });
+
+      // Computing Arrival Date
+      const arrdate = itineraries.segments[itineraries.segments.length - 1].arrival.at;
+      const arrArray = arrdate.split("T");
+      const arrivalDate = arrArray[0];
+      const arrivalTime = arrArray[1].substr(0, 5);
+      const adate = new Date(arrivalDate);
+      const ardate = adate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' });
+
+      // Total stops between source & destination
+      const noOfStops = itineraries.segments.length - 1;
+      // Fetching Total Fare/price
+      const totalFare =  Math.ceil(values.travelerPricings[0].price.total).toLocaleString();
+      let flightDetail = `
+          <div class="theme-search-results" id="tobePagination-">
+            <div class="theme-search-results-item theme-search-results-item-rounded theme-search-results-item-">
+              <div class="theme-search-results-item-preview" >
+                <div class="row main_container" data-gutter="20">
+                  <div class="col-md-9 ">
+                    <div class="theme-search-results-item-flight-sections">
+                      <div class="row row-no-gutter row-eq-height" style="display: flex; align-items:center;">
+                        <div class="col-md-2 colks">
+                          <div class="theme-search-results-item-flight-section-airline-logo-wrap">
+                            <img class="theme-search-results-item-flight-section-airline-logo flight_img" src="https://pics.avs.io/200/100/${itineraries.segments[0].carrierCode}.png" alt="Consta Travel" title="Image Title">
+                          </div>
+                          <p style="font-size: 10px; line-height: 1;" class="carrier_name">${carriers[itineraries.segments[0].carrierCode]}</p>
+                        </div>
+                        <div class="col-md-10 ">
+                          <div class="theme-search-results-item-flight-section-item">
+                            <div class="row" style="display: flex;justify-content: space-between;align-items: center;">
+                              <div class="col-md-3">
+                                <div class="theme-search-results-item-flight-section-meta">
+                                  <p class="theme-search-results-item-flight-section-meta-time deperture_time" >
+                                    ${depTime} </p>
+                                </div>
+                              </div>
+                              <div class="col-md-6 ">
+                                <div class="theme-search-results-item-flight-section-path">
+                                  <div class="theme-search-results-item-flight-section-path-fly-time">
+                                    <p class="flight_duration">${duration}</p>
+                                  </div>
+                                  <div class="theme-search-results-item-flight-section-path-line"></div>
+
+                                  <div class="theme-search-results-item-flight-section-path-status">
+                                    <h5 class="theme-search-results-item-flight-section-airline-title flight_stops">
+                                      ${noOfStops === 0 ? '( Non Stop )' : `( Stops : ${noOfStops} )`}
+                                    </h5>
+
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-md-3 ">
+                                <div class="theme-search-results-item-flight-section-meta">
+
+                                  <p class="theme-search-results-item-flight-section-meta-time arrival_time">
+                                  ${arrivalTime}  
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 ">
+                    <div class="theme-search-results-item-book">
+                      <div class="theme-search-results-item-price">
+                        <p class="theme-search-results-item-price-tag"><i class="fa fa-inr" aria-hidden="true"></i><span class="total_fare"> ${totalFare}</span></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      `;
+
+      container.innerHTML += flightDetail;
+    });
+  }
 </script>
-<script src="./js/flight-return.js"></script>
-<!-- Displaying Data starts Ends-->
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Add numbers
+    function addFormattedNumbers(numStr1, numStr2) {
+      // Remove commas from the strings
+      const cleanedNumStr1 = numStr1.replace(/,/g, '');
+      const cleanedNumStr2 = numStr2.replace(/,/g, '');
+
+      // Convert the cleaned strings to numbers
+      const num1 = parseInt(cleanedNumStr1);
+      const num2 = parseInt(cleanedNumStr2);
+
+      // Add the numbers
+      const sum = num1 + num2;
+
+      // Optional: Format the result with commas
+      const formattedSum = sum.toLocaleString();
+
+      return  formattedSum;
+    }
+    // Function to get Selected Item
+    function selectedItemsData() {
+      // Get selected items from the onward flights column
+      const selectedOnward = document.querySelector('#onward_flights .selected');
+
+      // Get selected items from the returning flights column
+      const selectedReturning = document.querySelector('#returning_flights .selected');
+
+      // Collecting Selected Onward Flight Data
+      let onwardCarrierName = selectedOnward ? selectedOnward.querySelector('.selected .carrier_name').textContent.trim() : null;
+      let onwardDepertureTime = selectedOnward ? selectedOnward.querySelector('.selected .deperture_time').textContent.trim() : null;
+      let onwardFlightDuration = selectedOnward ? selectedOnward.querySelector('.selected .flight_duration').textContent.trim() : null;
+      let onwardFlightStops = selectedOnward ? selectedOnward.querySelector('.selected .flight_stops').textContent.trim() : null;
+      let onwardArrivalTime = selectedOnward ? selectedOnward.querySelector('.selected .arrival_time').textContent.trim() : null;
+      let onwardTotalFare = selectedOnward ? selectedOnward.querySelector('.selected .total_fare').textContent.trim() : null;
+      let onwardFlightImg = selectedOnward ? selectedOnward.querySelector('.selected .flight_img').getAttribute('src') : null;
+      // console.log(onwardCarrierName, onwardDepertureTime, onwardFlightDuration, onwardFlightStops, onwardArrivalTime, onwardTotalFare);
+
+      // Updating Onward Flight Value
+      document.getElementById('onward_carrier_name').innerHTML = onwardCarrierName;
+      document.getElementById('onward_deperture_time').innerHTML = onwardDepertureTime;
+      document.getElementById('onward_flight_duration').innerHTML = onwardFlightDuration;
+      document.getElementById('onward_flight_stops').innerHTML = onwardFlightStops;
+      document.getElementById('onward_arrival_time').innerHTML = onwardArrivalTime;
+      document.getElementById('onward_flight_img').setAttribute('src', onwardFlightImg);
+
+      // Collecting Selected Returning Flight Data
+      let returnCarrierName = selectedReturning ? selectedReturning.querySelector('.selected .carrier_name').textContent.trim() : null;
+      let returnDepertureTime = selectedReturning ? selectedReturning.querySelector('.selected .deperture_time').textContent.trim() : null;
+      let returnFlightDuration = selectedReturning ? selectedReturning.querySelector('.selected .flight_duration').textContent.trim() : null;
+      let returnFlightStops = selectedReturning ? selectedReturning.querySelector('.selected .flight_stops').textContent.trim() : null;
+      let returnArrivalTime = selectedReturning ? selectedReturning.querySelector('.selected .arrival_time').textContent.trim() : null;
+      let returnTotalFare = selectedReturning ? selectedReturning.querySelector('.selected .total_fare').textContent.trim() : null;
+      let returnFlightImg = selectedReturning ? selectedReturning.querySelector('.selected .flight_img').getAttribute('src') : null;
+      // Updating Returning Flight Value
+      document.getElementById('return_carrier_name').innerHTML = returnCarrierName;
+      document.getElementById('return_deperture_time').innerHTML = returnDepertureTime;
+      document.getElementById('return_flight_duration').innerHTML = returnFlightDuration;
+      document.getElementById('return_flight_stops').innerHTML = returnFlightStops;
+      document.getElementById('return_arrival_time').innerHTML = returnArrivalTime;
+      document.getElementById('return_flight_img').setAttribute('src', returnFlightImg);
+
+      document.getElementById('combined_total_fare').innerHTML = addFormattedNumbers(onwardTotalFare, returnTotalFare);
+    }
+
+    // Function to handle the selection logic
+    function handleSelection(event) {
+      // Get the target element
+      const target = event.currentTarget;
+      const parent = target.closest('.col');
+
+      // Remove 'selected' class from all items in the same column
+      parent.querySelectorAll('.theme-search-results-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+
+      // Add 'selected' class to the clicked item
+      target.classList.add('selected');
+    }
+
+    // Add event listeners to all items in the 'onward_flights' column
+    document.querySelectorAll('#onward_flights .theme-search-results-item').forEach(item => {
+      // console.log(getSelectedItems()); handleSelection()
+      item.addEventListener('click', item => {
+        handleSelection(item);
+        selectedItemsData();
+      });
+    });
+
+    // Add event listeners to all items in the 'returning_flights' column
+    document.querySelectorAll('#returning_flights .theme-search-results-item').forEach(item => {
+      item.addEventListener('click', item => {
+        handleSelection(item);
+        selectedItemsData();
+      });
+    });
+
+    // Set the default selected state
+    document.querySelector('#onward_flights .theme-search-results-item').classList.add('selected');
+    document.querySelector('#returning_flights .theme-search-results-item').classList.add('selected');
+    selectedItemsData();
+  });
+
+</script>
+
+
+
+
 
 

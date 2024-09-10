@@ -5,20 +5,50 @@ ini_set('display_errors', '1');
 include('connection.php');
 $token = $_GET['token'];
 
-$slquery = mysql_query("SELECT * FROM `flight_search` WHERE token='" . $token . "'");
-while ($flightdata =  mysql_fetch_array($slquery)) {
-  $departure_city = $flightdata['departure_city'];
-  $destination_city = $flightdata['destination_city'];
-  $departure_city_code = $flightdata['departure_city_code'];
-  $destination_city_code = $flightdata['destination_city_code'];
-  $departure_date = $flightdata['departure_date'];
-  $return_date = $flightdata['return_date'];
-  $adult = $flightdata['adult'];
-  $child = $flightdata['child'];
-  $infants = $flightdata['infants'];
-  $travelclass = $flightdata['travelclass'];
-  $counter = $flightdata['counter'];
+if(!isset($_GET['token'])){
+  // echo "<pre>";
+  // print_r($_POST);
+
+  // $departure_city = explode(',', substr($_POST['source'], 6))['0'];
+  $departure_city = $_GET['source'];
+  $departure_city_code = substr($_GET['source'], 0, 3);
+
+  // $destination_city = explode(',', substr($_GET['destination'], 6))['0'];
+  $destination_city = $_GET['destination'];
+  $destination_city_code = substr($_GET['destination'], 0, 3);
+
+  $adult = $_GET['adults'];
+  $child = $_GET['child'];
+  $infants = $_GET['infants'];
+
+  $travelclass = $_GET['travel_class'];
+  $departure_date = $_GET['departure_date'];
+  $return_date = $_GET['arrival_date'];
+  // echo "$departure_city $departure_city_code $destination_city $destination_city_code $adult $infants $child  $travelclass $departure_date";
+  // die;
+}else{
+  $slquery = mysql_query("SELECT * FROM `flight_search` WHERE token='" . $token . "'");
+  while ($flightdata =  mysql_fetch_array($slquery)) {
+    $departure_city = $flightdata['departure_city'];
+    $destination_city = $flightdata['destination_city'];
+    $departure_city_code = $flightdata['departure_city_code'];
+    $destination_city_code = $flightdata['destination_city_code'];
+    $departure_date = $flightdata['departure_date'];
+    $return_date = $flightdata['return_date'];
+    $adult = $flightdata['adult'];
+    $child = $flightdata['child'];
+    $infants = $flightdata['infants'];
+    $travelclass = $flightdata['travelclass'];
+    $counter = $flightdata['counter'];
+  }
 }
+  
+// Default search value starts
+$adult = isset($adult) && !empty($adult)?$adult:1;
+$child = isset($child) && !empty($child)?$child:0;
+$infants = isset($infants) && !empty($infants)?$infants:0;
+$travelclass = isset($travelclass) && !empty($travelclass)?$travelclass:'ECONOMY';
+// Default search value Ends
 
 // echo "$departure_city | $destination_city | $departure_city_code | $destination_city_code | $departure_date | $return_date | $adult | $child | $infants| $travelclass | $counter";die;
 // ======================================================================
@@ -74,20 +104,29 @@ function fetchAPiData($url_slug, $data, $access_token)
 }
 // ======================================================================
 
-// formatting travel date
-if ($departure_date) {
+// formatting travel date if not formated starts
+$datePattern = '/^\d{4}-\d{2}-\d{2}$/';
+if ($departure_date && preg_match($datePattern, $departure_date)){
+
+}
+else if($departure_date){
   $yy = substr($departure_date . "", 0, 4);
   $mm = substr($departure_date . "", 4, 2);
   $dd = substr($departure_date . "", 6, 2);
   $departure_date = $yy . '-' . $mm . '-' . $dd;
 }
-if ($return_date) {
+
+if ($return_date && preg_match($datePattern, $return_date)){
+
+}
+else if ($return_date) {
   $yy = substr($return_date . "", 0, 4);
   $mm = substr($return_date . "", 4, 2);
   $dd = substr($return_date . "", 6, 2);
   $return_date = $yy . '-' . $mm . '-' . $dd;
   // echo $return_date;
 }
+// formatting travel date if not formated ends
 
 $dateRange = date('Y-m-d', strtotime($departure_date . " +9 day"));
 $cheapestDateRequestData = array(
@@ -165,6 +204,10 @@ $dataReturn = array(
   'children' => $child,
   'infants' => $infants,
 );
+// echo "<pre>";
+// print_r($data);
+// echo "<br>";
+// print_r($dataReturn);die;
 // $resultReturn = fetchAPiData("v2/shopping/flight-offers", $dataReturn, $access_token);
 // uncomment above lines of code to execute Live API and comment following three lines of code to hide static data
 include('flight_search_static_api_data.php');
@@ -565,18 +608,20 @@ span.bold_price {
     <div class="container">
       <div class="row">
         <div class="col-12">
-          <div class="top_search__form">
-            <form action="">
+        <div class="top_search__form">
+            <form action="/new-flight-return.php" method="GET" id="header_search_form">
               <div class="re_form__control">
-                <select class="form-select" aria-label="Default select example">
+                <select class="form-select" aria-label="Default select example" id="trip_type">
                   <option value="1">One way</option>
-                  <option value="2">Round Trip</option>
+                  <option value="2" selected>Round Trip</option>
                 </select>
               </div>
               <div class="re_form__control">
                 <div class="hny_switch">
-                  <input type="text" id="input1" class="input-field" placeholder="Departure" value="<?= $departure_city ?>">
-                  <button type="button" id="toggleButton">
+                  <!-- <form autocomplete="off"> -->
+                    <input type="text" name="source" minlength="3" id="flightonewayfrom" class="input-field" placeholder="Source" value="<?= $departure_city ?>" required>
+                  <!-- </form> -->
+                    <button type="button" id="toggleButton">
                     <svg width="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#735C93">
                       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                       <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -585,20 +630,27 @@ span.bold_price {
                         <path d="M15 15L3 15" stroke="#735C93" stroke-width="0.8879999999999999" stroke-linecap="round" stroke-linejoin="round"></path>
                         <path d="M18 12L20.913 9.08704V9.08704C20.961 9.03897 20.961 8.96103 20.913 8.91296V8.91296L18 6" stroke="#735C93" stroke-width="0.8879999999999999" stroke-linecap="round" stroke-linejoin="round"></path>
                         <path d="M6 18L3.08704 15.087V15.087C3.03897 15.039 3.03897 14.961 3.08704 14.913V14.913L6 12" stroke="#735C93" stroke-width="0.8879999999999999" stroke-linecap="round" stroke-linejoin="round"></path>
-                      </g>
+                      </g> 
                     </svg>
                   </button>
-                  <input type="text" id="input2" class="input-field" placeholder="Arrival" value="<?= $destination_city ?>">
+                  <!-- <form autocomplete="off"> -->
+                    <input type="text" name="destination" minlength="3" id="flightonewayto" class="input-field" placeholder="Destination" value="<?= $destination_city ?>" required required>
+                  <!-- </form> -->
                 </div>
               </div>
               <div class="re_form__control">
-                <input type="date" class="input-field" value="<?= $departure_date ?>">
+                <input type="text" name="departure_date" class="input-field" id="flightonewaydeparture_date" placeholder="Departure" value="<?= $departure_date ?>" readonly required/>
               </div>
               <div class="re_form__control">
-                <input type="date" class="input-field" placeholder="Return" value="<?= $departure_date ?>">
+                <input type="text"  name="arrival_date" class="input-field" id="flightonewayarrival_date" placeholder="Return" value="<?= $return_date ?>" readonly/>
+                <span id="clear_date_btn" ><i class="fas fa-times"></i></span>
               </div>
               <div class="re_form__control">
-                <h3><?= $adult ?> Traveller <i class="fa fa-angle-up"></i></h3>
+                <h3 id="no_of_adults_display"><?= $adult ?> Traveller <i class="fa fa-angle-down"></i></h3>
+                <input name="adults" id="no_of_adults" type="hidden" value="<?= $adult ?>" />
+                <input type="hidden" name="travel_class" value="<?= $travelclass ?>" />
+                <input type="hidden" name="child" value="<?= $child ?>">
+                <input type="hidden" name="infants" value="<?= $infants ?>">
                 <div class="travler_list">
                   <h5>Travellers</h5>
                   <div class="add_trav__more">
@@ -606,10 +658,9 @@ span.bold_price {
                       <li>
                         <h4>Adults</h4>
                         <div class="quantity-field">
-                          <button class="value-button decrease-button" onclick="decreaseValue(this)" title="Azalt">-</button>
-                          <div class="number">0</div>
-                          <button class="value-button increase-button" onclick="increaseValue(this, 5)" title="Arrtır">+
-                          </button>
+                          <button type="button" class="value-button decrease-button" onclick="decreaseValue(this)" title="Decrease">-</button>
+                          <div class="number"><?= $adult ?></div>
+                          <button type="button" class="value-button increase-button" onclick="increaseValue(this, 5)" title="Increase">+</button>
                         </div>
                       </li>
                     </ul>
@@ -617,7 +668,7 @@ span.bold_price {
                 </div>
               </div>
               <div class="re_form__control">
-                <button type="button" id="main_re__search">Search</button>
+                <button type="submit" id="main_re__search">Search</button>
               </div>
             </form>
           </div>
@@ -1379,8 +1430,8 @@ span.bold_price {
   <?php include('footer.php'); ?>
 
 
-  <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-  <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+  <!-- <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script> -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"></script>
   <script src="js/buzina-pagination.min.js"></script>
@@ -1704,7 +1755,7 @@ span.bold_price {
     handleSticky();
   });
 </script>
-<!-- Displaying Data starts-->
+<!-- Displaying Data -->
 <script>
   let ongoingFlights = <?php echo json_encode($datas) ?>;
   let ongoingCarriers = <?= json_encode($carriers) ?>;
@@ -1719,4 +1770,37 @@ span.bold_price {
 <script src="./js/flight-return.js"></script>
 <!-- Displaying Data starts Ends-->
 
+<?php include('js/custom/searchbar_js.php'); ?>
+<script>
+    function toggleLocation(){
+      let from = $('#flightonewayfrom').val();
+      let to = $('#flightonewayto').val();
 
+      $('#flightonewayto').val(from);
+      $('#flightonewayfrom').val(to);
+    }
+    function increaseValue(button, limit) {
+      const numberInput = button.parentElement.querySelector('.number');
+      var value = parseInt(numberInput.innerHTML, 10);
+      if (isNaN(value)) value = 0;
+      if (limit && value >= limit) return;
+      $('#no_of_adults').val(value + 1);
+      $('#no_of_adults_display').html(value + 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
+      numberInput.innerHTML = value + 1;
+    }
+
+
+    function decreaseValue(button) {
+      const numberInput = button.parentElement.querySelector('.number');
+      var value = parseInt(numberInput.innerHTML, 10);
+      if (isNaN(value)) value = 0;
+      if (value < 1) return;
+      $('#no_of_adults').val(value - 1);
+      $('#no_of_adults_display').html(value - 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
+      numberInput.innerHTML = value - 1;
+    }
+
+    $('#toggleButton').click(function (){
+      toggleLocation();
+    });
+  </script> 

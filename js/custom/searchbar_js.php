@@ -94,19 +94,31 @@
     $('#trip_type').val('1').change();
   });
 
-  clr_dt_btn();
+  // clr_dt_btn();
+  $(function(){
+      // Sets Default Arrival and Departure Date
+        let form_action = $('#header_search_form').attr('action');
+        if(form_action == '/new-flight-search.php'){
+          $('#clear_date_btn').hide();
+        }else{
+          let preSetDate1 = new Date();
+          let preSetDate2 = new Date();
 
+          let departure_dtt = $('#flightonewaydeparture_date').val();
+          let return_dtt = $('#flightonewayarrival_date').val();
+          if( departure_dtt != ''){
+            preSetDate1 = new Date(departure_dtt);
+          }
+          if(return_dtt != ''){
+            preSetDate2 = new Date(return_dtt);
+          }
 
-
-  // Funtion to get current date
-  function getCurrentDate() {
-      const date = new Date();
-      const year = date.getFullYear().toString().slice(-2); // Get last 2 digits of the year
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-      const day = String(date.getDate()).padStart(2, '0');
-
-      return `${year}-${month}-${day}`;
-  }
+          $('#clear_date_btn').show();
+          $('#flightonewaydeparture_date').datepicker('setDate', preSetDate1);
+          $('#flightonewayarrival_date').datepicker('setDate', preSetDate2);
+          $('#trip_type').val('2').change();
+        }
+  })
   
   // Oneway And round trip selection
   let select_trip_type = document.getElementById('trip_type');

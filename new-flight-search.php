@@ -5,24 +5,24 @@ ini_set('display_errors', '1');
 include('connection.php');
 $token = $_GET['token'];
 
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
+if(!isset($_GET['token'])){
   // echo "<pre>";
   // print_r($_POST);
 
   // $departure_city = explode(',', substr($_POST['source'], 6))['0'];
-  $departure_city = $_POST['source'];
-  $departure_city_code = substr($_POST['source'], 0, 3);
+  $departure_city = $_GET['source'];
+  $departure_city_code = substr($_GET['source'], 0, 3);
 
-  // $destination_city = explode(',', substr($_POST['destination'], 6))['0'];
-  $destination_city = $_POST['destination'];
-  $destination_city_code = substr($_POST['destination'], 0, 3);
+  // $destination_city = explode(',', substr($_GET['destination'], 6))['0'];
+  $destination_city = $_GET['destination'];
+  $destination_city_code = substr($_GET['destination'], 0, 3);
 
-  $adult = $_POST['adults'];
-  $child = $_POST['child'];
-  $infants = $_POST['infants'];
+  $adult = $_GET['adults'];
+  $child = $_GET['child'];
+  $infants = $_GET['infants'];
 
-  $travelclass = $_POST['travel_class'];
-  $departure_date = $_POST['departure_date'];
+  $travelclass = $_GET['travel_class'];
+  $departure_date = $_GET['departure_date'];
 
   // echo "$departure_city $departure_city_code $destination_city $destination_city_code $adult $infants $child  $travelclass $departure_date";
   // die;
@@ -43,6 +43,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $counter = $flightdata['counter'];
   }
 }
+// Default search value starts
+$adult = isset($adult) && !empty($adult)?$adult:1;
+$child = isset($child) && !empty($child)?$child:0;
+$infants = isset($infants) && !empty($infants)?$infants:0;
+$travelclass = isset($travelclass) && !empty($travelclass)?$travelclass:'ECONOMY';
+// Default search value Ends
 
 // echo $departure_city; die;
 
@@ -100,7 +106,7 @@ function fetchAPiData($url_slug, $data, $access_token){
 }
 // ======================================================================
 
-// formatting travel date
+// formatting travel date if not formated starts
 $datePattern = '/^\d{4}-\d{2}-\d{2}$/';
 if ($departure_date && preg_match($datePattern, $departure_date)){
 
@@ -112,7 +118,7 @@ else if($departure_date){
   $departure_date = $yy . '-' . $mm . '-' . $dd;
 }
 
-if ($departure_date && preg_match($datePattern, $departure_date)){
+if ($return_date && preg_match($datePattern, $return_date)){
 
 }
 else if ($return_date) {
@@ -122,6 +128,7 @@ else if ($return_date) {
   $return_date = $yy . '-' . $mm . '-' . $dd;
   // echo $return_date;
 }
+// formatting travel date if not formated ends
 
 $dateRange = date('Y-m-d', strtotime($departure_date . " +9 day"));
 $cheapestDateRequestData = array(
@@ -184,7 +191,6 @@ $data = array(
 // uncomment above lines of code to execute Live API and comment following three lines of code to hide static data
 include('flight_search_static_api_data.php');
 $result = $api_data;
-
 $data = json_decode($result, true);
 $datas = $data['data'];
 $total = count($datas);
@@ -369,7 +375,7 @@ $aircraft = $dictonary['aircraft'];
       <div class="row">
         <div class="col-12">
           <div class="top_search__form">
-            <form action="/new-flight-search.php" method="POST" id="header_search_form">
+            <form action="/new-flight-search.php" method="GET" id="header_search_form">
               <div class="re_form__control">
                 <select class="form-select" aria-label="Default select example" id="trip_type">
                   <option value="1" selected>One way</option>
@@ -407,7 +413,6 @@ $aircraft = $dictonary['aircraft'];
               </div>
               <div class="re_form__control">
                 <h3 id="no_of_adults_display"><?= $adult ?> Traveller <i class="fa fa-angle-down"></i></h3>
-                <input name="adults" id="no_of_adults" type="hidden" value="<?= $adult ?>" />
                 <input type="hidden" name="travel_class" value="<?= $travelclass ?>" />
                 <input type="hidden" name="adults" value="<?= $adult ?>">
                 <input type="hidden" name="child" value="<?= $child ?>">
@@ -1193,28 +1198,6 @@ $aircraft = $dictonary['aircraft'];
   </script>
 
   <script>
-    function increaseValue(button, limit) {
-      const numberInput = button.parentElement.querySelector('.number');
-      var value = parseInt(numberInput.innerHTML, 10);
-      if (isNaN(value)) value = 0;
-      if (limit && value >= limit) return;
-      $('#no_of_adults').val(value + 1);
-      $('#no_of_adults_display').html(value + 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
-      numberInput.innerHTML = value + 1;
-    }
-
-
-    function decreaseValue(button) {
-      const numberInput = button.parentElement.querySelector('.number');
-      var value = parseInt(numberInput.innerHTML, 10);
-      if (isNaN(value)) value = 0;
-      if (value < 1) return;
-      $('#no_of_adults').val(value - 1);
-      $('#no_of_adults_display').html(value - 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
-      numberInput.innerHTML = value - 1;
-    }
-  </script>
-  <script>
 
   </script>
   <script>
@@ -1328,3 +1311,36 @@ function getDataByDate(dateValue){
   });
 </script>
 <?php include('js/custom/searchbar_js.php'); ?>
+<script>
+    function toggleLocation(){
+      let from = $('#flightonewayfrom').val();
+      let to = $('#flightonewayto').val();
+
+      $('#flightonewayto').val(from);
+      $('#flightonewayfrom').val(to);
+    }
+    function increaseValue(button, limit) {
+      const numberInput = button.parentElement.querySelector('.number');
+      var value = parseInt(numberInput.innerHTML, 10);
+      if (isNaN(value)) value = 0;
+      if (limit && value >= limit) return;
+      $('#no_of_adults').val(value + 1);
+      $('#no_of_adults_display').html(value + 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
+      numberInput.innerHTML = value + 1;
+    }
+ 
+
+    function decreaseValue(button) {
+      const numberInput = button.parentElement.querySelector('.number');
+      var value = parseInt(numberInput.innerHTML, 10);
+      if (isNaN(value)) value = 0;
+      if (value < 1) return;
+      $('#no_of_adults').val(value - 1);
+      $('#no_of_adults_display').html(value - 1 + ` Traveller <i class="fa fa-angle-down"></i>`);
+      numberInput.innerHTML = value - 1;
+    }
+
+    $('#toggleButton').click(function (){
+      toggleLocation();
+    });
+  </script>
